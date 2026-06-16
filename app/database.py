@@ -3,20 +3,18 @@ from sqlalchemy.orm import declarative_base, sessionmaker
 from .config import settings
 
 if settings.database_url:
-    # Render gives postgresql:// but psycopg3 needs postgresql+psycopg://
-    database_url = settings.database_url.replace(
-        "postgresql://", "postgresql+psycopg://", 1
+    # Render gives postgres://, SQLAlchemy needs postgresql+psycopg://
+    SQL_URL = settings.database_url.replace(
+        "postgres://", "postgresql+psycopg://", 1
     )
 else:
-    database_url = (
-        f"postgresql+psycopg://"
-        f"{settings.database_username}:"
-        f"{settings.database_password}@"
-        f"{settings.database_hostname}/"
-        f"{settings.database_name}"
+    SQL_URL = (
+        f"postgresql+psycopg://{settings.database_username}:"
+        f"{settings.database_password}@{settings.database_hostname}:"
+        f"{settings.database_port}/{settings.database_name}"
     )
 
-engine = create_engine(database_url)
+engine = create_engine(SQL_URL)
 Base = declarative_base()
 SessionLocal = sessionmaker(bind=engine, autoflush=False)
 

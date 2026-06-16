@@ -3,10 +3,14 @@ from sqlalchemy.orm import declarative_base, sessionmaker
 from .config import settings
 
 if settings.database_url:
-    # Render gives postgres://, SQLAlchemy needs postgresql+psycopg://
-    SQL_URL = settings.database_url.replace(
-        "postgres://", "postgresql+psycopg://", 1
-    )
+    raw = settings.database_url
+    # Render gives postgres:// or postgresql://, both need the psycopg driver specified
+    if raw.startswith("postgres://"):
+        SQL_URL = raw.replace("postgres://", "postgresql+psycopg://", 1)
+    elif raw.startswith("postgresql://") and "+psycopg" not in raw:
+        SQL_URL = raw.replace("postgresql://", "postgresql+psycopg://", 1)
+    else:
+        SQL_URL = raw
 else:
     SQL_URL = (
         f"postgresql+psycopg://{settings.database_username}:"
